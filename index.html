@@ -224,7 +224,7 @@ async function showScanTicket(bookingCode){
       } else {
         await docRef.update({checkin:true});
         checkinTextEl.textContent = "Checked-In Successfully!";
-        checkinTextEl.style.color = "#f33";
+        checkinTextEl.style.color = "#0f0";
       }
     } else {
       checkinTextEl.textContent = "Booking not found!";
@@ -244,4 +244,5 @@ document.getElementById('scanDoneBtn').addEventListener('click', ()=>{
 </script>
 </body>
 </html>
+
 
