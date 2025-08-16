@@ -1,230 +1,246 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>MyKualaExpress — Elite</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyKualaExpress+ View & Scan</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 <style>
-  :root{
-    --gold:#d4af37;
-    --gold-soft:#bfa36f;
-    --ink:#0a0a0a;
-    --matcha:#7BB661;
-    --matcha-dark:#5f9d48;
-    --white:#ffffff;
-  }
+body{margin:0;padding:0;font-family:'Inter',sans-serif;background:#111;color:#fff;}
+header,footer{text-align:center;color:#d4af37;font-weight:700;padding:10px;}
+h2{text-align:center;color:#d4af37;}
+button,input{font-family:'Inter',sans-serif;}
+.container{
+  display:none;
+  padding:30px;
+  max-width:500px;
+  margin:50px auto;
+  background:#1a1a1a;
+  border-radius:20px;
+  box-shadow: 0 0 20px #d4af37, 0 0 40px #d4af37 inset, 0 0 60px #fff inset;
+  transition:0.3s;
+}
+input{width:95%;padding:10px;margin:8px 0;border-radius:12px;border:2px solid #d4af37;background:#222;color:#fff;}
+button{width:100%;padding:15px;margin-top:10px;border-radius:12px;border:none;background:linear-gradient(90deg,#d4af37,#a8b77e);color:#111;font-weight:700;cursor:pointer;transition:0.2s;}
+button:hover{transform:translateY(-2px);}
+#bookingDetails p{margin:6px 0;text-shadow:0 0 5px #d4af37;}
 
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{height:100%;}
-
-  body{
-    font-family:'Inter',sans-serif;
-    color:var(--gold);
-    background:
-      radial-gradient(1200px 600px at 80% -10%, rgba(212,175,55,0.25), transparent 60%),
-      radial-gradient(900px 500px at -10% 20%, rgba(255,255,255,0.15), transparent 60%),
-      linear-gradient(135deg, #000 0%, #111 40%, #222 60%, #fff 160%);
-    display:flex;flex-direction:column;
-    min-height:100vh;
-  }
-
-  #loading{
-    position:fixed;inset:0;z-index:9999;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:linear-gradient(135deg,#000 0%, #0f0f0f 60%, #1a1a1a 100%);
-    transition:opacity .6s ease;
-  }
-  #loading.hidden{opacity:0;pointer-events:none;}
-
-  .loaderBadge{
-    width:110px;height:110px;border-radius:28px;
-    position:relative;overflow:hidden;
-    box-shadow:0 10px 40px rgba(0,0,0,.6), inset 0 0 20px rgba(212,175,55,.25);
-    background:linear-gradient(135deg, rgba(212,175,55,.4), rgba(191,163,111,.2));
-  }
-  .loaderShimmer{
-    position:absolute;inset:-50%;
-    background:conic-gradient(from 0deg,
-      rgba(212,175,55,.0) 0%,
-      rgba(212,175,55,.35) 25%,
-      rgba(255,255,255,.15) 40%,
-      rgba(191,163,111,.0) 60%,
-      rgba(212,175,55,.0) 100%);
-    animation:spin 1.6s linear infinite;
-    filter:blur(2px);
-  }
-  .loadingText{
-    margin-top:18px;
-    font-size:28px;font-weight:900;letter-spacing:2px;
-    color:var(--gold);
-    text-shadow:0 0 10px rgba(212,175,55,.55);
-    animation:pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @keyframes pulse{0%,100%{opacity:.8}50%{opacity:1}}
-
-  .top{
-    padding:16px 18px 8px;
-    text-align:center;
-  }
-  .brandCard{
-    display:inline-block;
-    padding:14px 18px;
-    background:rgba(255,255,255,.06);
-    border:1px solid rgba(212,175,55,.25);
-    border-radius:18px;
-    box-shadow:0 8px 28px rgba(0,0,0,.35);
-    backdrop-filter:blur(4px);
-  }
-  .brand{
-    font-weight:900;letter-spacing:2px;
-    font-size:28px;line-height:1;
-    background:linear-gradient(90deg,var(--gold),#f3e6a6);
-    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  }
-
-  .timeWrap{
-    margin:18px auto 10px;
-    text-align:center;color:var(--gold);
-  }
-  #currentTime{font-size:44px;font-weight:900;letter-spacing:1px;}
-  #currentDate{font-size:18px;opacity:.9;margin-top:6px;}
-
-  .spacer{flex:1;}
-
-  .bottomPanel{
-    margin:0 auto 8px;
-    width:min(920px, 96vw);
-    border-radius:24px;
-    padding:18px 16px 14px;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
-      linear-gradient(135deg, rgba(212,175,55,.15), rgba(0,0,0,.35));
-    border:1px solid rgba(212,175,55,.28);
-    box-shadow:
-      0 10px 40px rgba(0,0,0,.55),
-      inset 0 0 24px rgba(212,175,55,.12);
-    backdrop-filter:blur(6px);
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:14px;
-  }
-
-  .btn{
-    display:flex;align-items:center;justify-content:center;
-    text-decoration:none;text-align:center;
-    padding:18px 12px; min-height:88px;
-    font-weight:800;font-size:18px;letter-spacing:.5px;
-    color:#0b1a0a;
-    background:linear-gradient(135deg,var(--gold), var(--white));
-    border-radius:18px;border:0;
-    box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
-    transition:transform .15s ease, box-shadow .2s ease, filter .2s ease, background-position 2s ease;
-    will-change:transform,filter;
-    background-size:200% 200%;
-  }
-  .btn:active{transform:scale(.98)}
-  .btn:hover{filter:brightness(1.03);box-shadow:0 12px 28px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.12);}
-
-  /* Gold animated gradient */
-  .btn.gold-active{
-    color:var(--ink);
-    background:linear-gradient(270deg, var(--gold), var(--gold-soft), var(--gold), var(--gold-soft));
-    background-size:800% 800%;
-    animation:goldFlow 3s ease infinite;
-  }
-  @keyframes goldFlow{
-    0%{background-position:0% 50%;}
-    50%{background-position:100% 50%;}
-    100%{background-position:0% 50%;}
-  }
-
-  .footnote{
-    text-align:center;margin-top:12px;
-    font-size:12px;color:rgba(255,255,255,.65);
-  }
-
-  @media (max-width:480px){
-    #currentTime{font-size:36px;}
-    #currentDate{font-size:16px;}
-    .btn{min-height:80px;font-size:16px;border-radius:16px;}
-    .bottomPanel{padding:14px;}
-    .grid{gap:12px;}
-  }
+/* Loading Screen */
+#loading{
+  position:fixed; top:0; left:0;
+  width:100%; height:100%;
+  background:#111;
+  z-index:9999;
+  display:flex; justify-content:center; align-items:center; flex-direction:column;
+}
+.loaderBadge{
+  position:relative;
+  width:100px; height:100px;
+  border-radius:15px;
+  background:#1a1a1a;
+  overflow:hidden;
+}
+.loaderShimmer{
+  position:absolute;
+  inset:-50%;
+  background:conic-gradient(from 0deg,
+    rgba(212,175,55,0) 0%,
+    rgba(212,175,55,0.35) 25%,
+    rgba(255,255,255,0.15) 40%,
+    rgba(191,163,111,0) 60%,
+    rgba(212,175,55,0) 100%);
+  animation:spin 1.6s linear infinite;
+  filter:blur(2px);
+  border-radius:50%;
+}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+.loadingText{
+  color:#d4af37;
+  font-weight:700;
+  margin-top:12px;
+  font-size:1.5rem;
+  text-shadow:0 0 10px #d4af37;
+}
 </style>
 </head>
 <body>
 
-<div id="loading" aria-hidden="true">
-  <div class="loaderBadge"><div class="loaderShimmer"></div></div>
-  <div class="loadingText">MYKUALAEXPRESS+</div>
-   <div style="margin-top:6px; font-size:12px; color:rgba(255,255,255,0.6);">
-    Loading...
+<header>
+  <h1>MYKUALAEXPRESS+</h1>
+</header>
+
+<!-- Loading Screen -->
+<div id="loading" style="display:none;">
+  <div class="loaderBadge">
+    <div class="loaderShimmer"></div>
   </div>
+  <div class="loadingText">MYKUALAEXPRESS+</div>
+  <div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.6);">Loading...</div>
 </div>
 
-<section class="top">
-  <div class="brandCard">
-    <div class="brand">MYKUALAEXPRESS+</div>
+<!-- 1️⃣ View Bookings -->
+<div class="container" id="viewBookingsScreen" style="display:block;">
+  <h2>View Your Bookings</h2>
+  <input type="text" id="bookingInput" placeholder="Enter Booking Code (MYKE-XXXX)"/>
+  <div style="display:flex; gap:10px;">
+    <button id="searchBookingBtn" style="flex:1;">Search</button>
+    <button id="cancelBookingBtn" style="flex:1;background:linear-gradient(90deg,#f33,#a00);color:#fff;">Cancel</button>
   </div>
+  <div id="bookingDetails"></div>
+</div>
 
-  <div class="timeWrap">
-    <div id="currentTime"></div>
-    <div id="currentDate"></div>
-  </div>
-</section>
+<!-- 2️⃣ Scan Ticket -->
+<div class="container" id="scanTicketScreen">
+  <h2>Your Booking Code</h2>
+  <p id="bookingCodeText" style="font-size:2rem;font-weight:700;text-align:center;margin:20px 0;"></p>
+  <p id="checkinStatusText" style="text-align:center;font-weight:700;"></p>
+  <p style="text-align:center;font-size:12px;color:rgba(255,255,255,0.7);margin-top:10px;">
+    Copy this code and show to paste to view your tickets page. If you click button done, you can't see this code again. Any help go to DKTT
+  </p>
+  <button id="scanDoneBtn">Done</button>
+</div>
 
-<div class="spacer"></div>
-
-<section class="bottomPanel">
-  <div class="grid">
-    <a class="btn" href="https://itshdfs.github.io/booknowpagedkia/">Book Now!</a>
-    <a class="btn" href="scantickets.html">Scan My Tickets</a>
-    <a class="btn" href="https://itshdfs.github.io/checkinpagedkia/">My Bookings</a>
-    <a class="btn" href="error">Need Help?</a>
-  </div>
-  <div class="footnote">© SkylinesTransit 2025</div>
-</section>
+<footer>
+  © SkylinesTransit 2025
+</footer>
 
 <script>
-  const loading = document.getElementById('loading');
-  window.addEventListener('load', () => {
-    setTimeout(()=> loading.classList.add('hidden'), 3000);
-  });
+// Firebase config
+const firebaseConfig = {
+  apiKey:"AIzaSyDcAq_rnJ3342lCpxalebddMFGDFUrypUg",
+  authDomain:"aeris-data-smkmii.firebaseapp.com",
+  projectId:"aeris-data-smkmii",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-  function updateTimeDate(){
-    const now = new Date();
-    let h = now.getHours();
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    const m = now.getMinutes().toString().padStart(2,'0');
-    const s = now.getSeconds().toString().padStart(2,'0');
-    document.getElementById('currentTime').textContent = `${h}:${m}:${s} ${ampm}`;
+// SPA helper function
+function showScreen(screenId){
+  document.querySelectorAll('.container').forEach(c=>c.style.display='none');
+  document.getElementById(screenId).style.display='block';
+}
 
-    const day = now.getDate().toString().padStart(2,'0');
-    const month = (now.getMonth()+1).toString().padStart(2,'0');
-    const year = now.getFullYear();
-    document.getElementById('currentDate').textContent = `${day}-${month}-${year}`;
+// Loading helper function
+function showLoading(show){
+  document.getElementById('loading').style.display = show ? 'flex' : 'none';
+}
+
+// Search Booking with shimmer loading
+document.getElementById('searchBookingBtn').addEventListener('click', async ()=>{
+  const code = document.getElementById('bookingInput').value.trim().toUpperCase();
+  const bookingDetails = document.getElementById('bookingDetails');
+  if(!code){ alert("Masukkan Booking Code!"); return; }
+  showLoading(true);
+  bookingDetails.innerHTML = '';
+
+  setTimeout(async ()=>{
+    try{
+      const snapshot = await db.collection('Bookings').where('bookingCode','==',code).get();
+      showLoading(false);
+
+      if(snapshot.empty){
+        bookingDetails.innerHTML = `<p>No booking found</p>`;
+        return;
+      }
+
+      const data = snapshot.docs[0].data();
+      const paymentText = data.paymentStatus ? "Payment Confirmed" : "Not Yet Confirmed";
+      const checkinStatus = data.checkin === true;
+
+      // Convert timestamp ke string
+      let formattedDateTime = "";
+      if(data.selectedCar.date && data.selectedCar.date.toDate){
+        const dateObj = data.selectedCar.date.toDate();
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth()+1).padStart(2,'0');
+        const dd = String(dateObj.getDate()).padStart(2,'0');
+
+        let hours = dateObj.getHours();
+        const minutes = String(dateObj.getMinutes()).padStart(2,'0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const hh = String(hours).padStart(2,'0');
+
+        formattedDateTime = `${yyyy}-${mm}-${dd} ${hh}:${minutes} ${ampm}`;
+      }
+
+      // Build HTML
+      let html = `
+        <p><strong>Passenger:</strong> ${data.userInfo.fullName}</p>
+        <p><strong>IC:</strong> ${data.userInfo.ic}</p>
+        <p><strong>Phone:</strong> ${data.userInfo.phone}</p>
+        <p><strong>Email:</strong> ${data.userInfo.email}</p>
+        <p><strong>Car:</strong> ${data.selectedCar.carModel} (${data.selectedCar.numberPlate})</p>
+        <p><strong>Driver:</strong> ${data.selectedCar.driver}</p>
+        <p><strong>From → To:</strong> ${data.selectedCar.from} → ${data.selectedCar.to}</p>
+        <p><strong>Price:</strong> ${data.selectedCar.price}</p>
+        <p><strong>Date & Time:</strong> ${formattedDateTime}</p>
+        <p><strong>Payment Status:</strong> ${paymentText}</p>
+        <p><strong>Booking Code:</strong> ${data.bookingCode}</p>
+      `;
+
+      if(data.paymentStatus){
+        if(checkinStatus){
+          html += `<p style="color:#0f0;font-weight:700;">Already Checked-In !</p>`;
+        } else {
+          html += `<p style="color:#f33;font-weight:700;">Not Checked-In</p>`;
+          html += `<button onclick="showScanTicket('${data.bookingCode}')">Check-In</button>`;
+        }
+      }
+
+      bookingDetails.innerHTML = html;
+
+    }catch(err){
+      showLoading(false);
+      bookingDetails.innerHTML = `<p>Error fetching booking</p>`;
+      console.error(err);
+    }
+  }, 1200);
+});
+
+// Cancel button redirect
+document.getElementById('cancelBookingBtn').addEventListener('click', ()=>{
+  window.location.href = "https://www.example.com"; // ganti dengan URL target
+});
+
+// Show Scan Ticket & handle check-in
+async function showScanTicket(bookingCode){
+  showScreen('scanTicketScreen');
+  document.getElementById('bookingCodeText').textContent = bookingCode;
+
+  const checkinTextEl = document.getElementById('checkinStatusText');
+  try{
+    const snapshot = await db.collection('Bookings').where('bookingCode','==',bookingCode).get();
+    if(!snapshot.empty){
+      const docRef = snapshot.docs[0].ref;
+      const data = snapshot.docs[0].data();
+
+      if(data.checkin === true){
+        checkinTextEl.textContent = "Already Checked-In!";
+        checkinTextEl.style.color = "#0f0";
+      } else {
+        await docRef.update({checkin:true});
+        checkinTextEl.textContent = "Checked-In Successfully!";
+        checkinTextEl.style.color = "#f33";
+      }
+    } else {
+      checkinTextEl.textContent = "Booking not found!";
+      checkinTextEl.style.color = "#f33";
+    }
+  } catch(err){
+    console.error(err);
+    checkinTextEl.textContent = "Error checking in!";
+    checkinTextEl.style.color = "#f33";
   }
-  updateTimeDate();
-  setInterval(updateTimeDate, 1000);
+}
 
-  // Button click: show loading + gold animation
-  document.querySelectorAll('.btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      btn.classList.add('gold-active');
-      loading.classList.remove('hidden');
-      setTimeout(()=> {
-        window.location.href = btn.getAttribute('href');
-      }, 1500);
-    });
-  });
+// Done button back to View Bookings
+document.getElementById('scanDoneBtn').addEventListener('click', ()=>{
+  window.location.href = "https://www.example.com"; // ganti dengan URL target
+});
 </script>
 </body>
 </html>
